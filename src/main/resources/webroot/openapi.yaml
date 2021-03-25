@@ -1,0 +1,197 @@
+# Sadly roles for basic auth are not supported in OpenAPI just yet (maybe in 3.1) so don't get confused by the roles
+openapi: 3.0.1
+info:
+  title: Customer Service
+  description: 'A simple OpenAPI description of a REST service'
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:8085/customer2 # Remember to change this in the CustomerOpenApiRestAdapter as well if you change the path
+tags:
+  - name: customer
+    description: Customer Service Operations
+paths:
+  /customer:
+    post:
+      tags:
+        - customer
+      summary: Add a new customer
+      operationId: insertCustomer
+      requestBody:
+        description: Customer object to create a new customer
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      responses:
+        200:
+          description: Successful insert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        400:
+          description: Invalid input
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "customerId $customerId is no valid Integer"
+      security:
+        - customer_auth:
+            - write-customer
+            - read-customer
+  /customer/{customerId}:
+    get:
+      tags:
+        - customer
+      summary: Find customer by ID
+      description: Returns a single customer
+      operationId: getCustomer
+      parameters:
+        - name: customerId
+          in: path
+          description: ID of customer to return
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        400:
+          description: Invalid ID supplied
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "customerId $customerId is no valid Integer"
+        404:
+          description: Customer not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Customer $customerId not found"
+      security:
+        - customer_auth:
+            - read-customer
+    delete:
+      tags:
+        - customer
+      summary: Deletes a customer
+      operationId: deleteCustomer
+      parameters:
+        - name: customerId
+          in: path
+          description: Customer id to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: successful operation
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Customer $customerId was deleted"
+        400:
+          description: Invalid ID supplied
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "customerId $customerId is no valid Integer"
+        404:
+          description: Customer not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Customer $customerId not found"
+      security:
+        - customer_auth:
+            - write-customer
+    put:
+      tags:
+        - customer
+      summary: Update an existing customer
+      operationId: updateCustomer
+      parameters:
+        - name: customerId
+          in: path
+          description: Customer id to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Customer object to update the existing customer
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        400:
+          description: Invalid ID supplied
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "customerId $customerId is no valid Integer"
+        404:
+          description: Customer not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Customer $customerId not found"
+      security:
+        - customer_auth:
+            - write-customer
+            - read-customer
+components:
+  schemas:
+    Customer:
+      required:
+        - name
+        - birthday
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Oaf Tobark"
+        birthday:
+          type: string
+          format: date
+          example: "1987-12-13"
+    CustomerResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/Customer'
+  securitySchemes:
+    customer_auth:
+      type: http
+      scheme: basic
