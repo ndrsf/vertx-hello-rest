@@ -2,10 +2,48 @@ package de.apwolf.vertx_rest.persistence
 
 import de.apwolf.vertx_rest.logic.Customer
 import de.apwolf.vertx_rest.logic.CustomerId
+import io.vertx.core.AbstractVerticle
+import io.vertx.core.AsyncResult
+import io.vertx.core.Handler
+import io.vertx.core.Promise
+import io.vertx.core.json.JsonObject
+import io.vertx.ext.jdbc.JDBCClient
+import io.vertx.ext.sql.ResultSet
 import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicInteger
+import org.apache.logging.log4j.kotlin.Logging
 
-class CustomerPersistence {
+class CustomerPersistenceHandler : Handler<AsyncResult<ResultSet>>, Logging {
+
+    override fun handle(event: AsyncResult<ResultSet>) {
+        if (event.failed()) {
+            logger.error("Error on database query", event.cause())
+        }
+    }
+
+}
+
+class CustomerPersistenceVerticle : AbstractVerticle(), Logging {
+
+    override fun start(startPromise: Promise<Void>) {
+        val config = config()
+        config.put("url", "jdbc:hsqldb:mem:customer?shutdown=true")
+        config.put("driver_class", "org.hsqldb.jdbcDriver")
+        val client = JDBCClient.createShared(vertx, config(), "customer")
+
+        client.call("CREATE TABLE IF NOT EXISTS CUSTOMER (id INTEGER IDENTITY, name VARCHAR(100), birthday DATE )") {
+            if (it.failed()) {
+                logger.error("Error on database query", it.cause())
+                startPromise.fail(it.cause())
+            } else {
+                logger.info("Created table customer")
+            }
+        }
+    }
+
+    private fun validateDatabaseCall() {
+
+    }
 
     internal val someCustomers =
         hashMapOf<CustomerId, Customer>(

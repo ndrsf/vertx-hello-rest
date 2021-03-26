@@ -1,8 +1,8 @@
 package de.apwolf.vertx_rest.logic
 
-import de.apwolf.vertx_rest.persistence.CustomerPersistence
+import de.apwolf.vertx_rest.persistence.CustomerPersistenceVerticle
 
-class CustomerLogic(val customerPersistence: CustomerPersistence) {
+class CustomerLogic(val customerPersistence: CustomerPersistenceVerticle) {
 
     fun loadCustomer(customerId: CustomerId): Customer? {
         return customerPersistence.loadCustomer(customerId)

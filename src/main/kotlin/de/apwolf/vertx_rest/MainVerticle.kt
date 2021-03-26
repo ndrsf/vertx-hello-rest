@@ -1,7 +1,7 @@
 package de.apwolf.vertx_rest
 
 import de.apwolf.vertx_rest.logic.CustomerLogic
-import de.apwolf.vertx_rest.persistence.CustomerPersistence
+import de.apwolf.vertx_rest.persistence.CustomerPersistenceVerticle
 import de.apwolf.vertx_rest.restadapter.CustomerOpenApiRestVerticle
 import de.apwolf.vertx_rest.restadapter.CustomerRestVerticle
 import de.apwolf.vertx_rest.restadapter.SwaggerUiVerticle
@@ -14,7 +14,7 @@ import org.apache.logging.log4j.kotlin.Logging
 
 class MainVerticle : AbstractVerticle(), Logging {
 
-    private val customerLogic = CustomerLogic(CustomerPersistence())
+    private val customerLogic = CustomerLogic(CustomerPersistenceVerticle())
 
     private lateinit var mainRouter: Router
 

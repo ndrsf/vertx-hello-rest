@@ -13,13 +13,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(VertxExtension::class)
-class CustomerLogicTest {
+class CustomerPersistenceVerticleTest {
 
-    private lateinit var sut: CustomerPersistence
+    private lateinit var sut: CustomerPersistenceVerticle
 
     @BeforeEach
     fun beforeEach(vertx: Vertx, testContext: VertxTestContext) {
-        sut = CustomerPersistence()
+        sut = CustomerPersistenceVerticle()
 
         testContext.completeNow()
     }
