@@ -1,5 +1,7 @@
-package de.apwolf.vertx_rest.logic
+package de.apwolf.vertx_rest.persistence
 
+import de.apwolf.vertx_rest.logic.Customer
+import de.apwolf.vertx_rest.logic.CustomerId
 import io.vertx.core.Vertx
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
@@ -13,11 +15,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(VertxExtension::class)
 class CustomerLogicTest {
 
-    private lateinit var sut: CustomerLogic
+    private lateinit var sut: CustomerPersistence
 
     @BeforeEach
     fun beforeEach(vertx: Vertx, testContext: VertxTestContext) {
-        sut = CustomerLogic()
+        sut = CustomerPersistence()
 
         testContext.completeNow()
     }
@@ -35,22 +37,20 @@ class CustomerLogicTest {
                 CustomerId.of(3) to Customer(CustomerId.of(3), "Oaf Tobark", LocalDate.parse("1955-02-24")),
             )
         )
-        val insertedCustomer = sut.insertCustomer(CustomerLogicRequest(
+        val insertedCustomer = sut.insertCustomer(Customer(
             null,
             "Dude 4",
-            LocalDate.now(),
-            CustomerLogicRequestMode.INSERT))
-        assertEquals(4, insertedCustomer.id.id)
+            LocalDate.now()))
+        assertEquals(CustomerId.of(4), insertedCustomer.id)
 
         val deletedCustomer = sut.deleteCustomer(CustomerId.of(4))
         assertTrue(deletedCustomer)
 
-        val insertedCustomerAfterDeletion = sut.insertCustomer(CustomerLogicRequest(
+        val insertedCustomerAfterDeletion = sut.insertCustomer(Customer(
             null,
             "Dude 5",
-            LocalDate.now(),
-            CustomerLogicRequestMode.INSERT))
-        assertEquals(5, insertedCustomerAfterDeletion.id.id)
+            LocalDate.now()))
+        assertEquals(CustomerId.of(5), insertedCustomerAfterDeletion.id)
 
         testContext.completeNow()
     }

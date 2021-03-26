@@ -8,7 +8,8 @@ data class CustomerResponse(val id: Int, val name: String, val birthday: LocalDa
     companion object {
 
         fun fromCustomer(customer: Customer): CustomerResponse {
-            return CustomerResponse(customer.id.id, customer.name, customer.birthday)
+            // id always set for responses
+            return CustomerResponse(customer.id!!.id, customer.name, customer.birthday)
         }
     }
 }
