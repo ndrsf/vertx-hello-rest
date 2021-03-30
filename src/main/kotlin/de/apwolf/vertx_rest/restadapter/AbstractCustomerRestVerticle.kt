@@ -5,18 +5,17 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import de.apwolf.vertx_rest.logic.CustomerId
 import de.apwolf.vertx_rest.logic.CustomerLogic
 import de.apwolf.vertx_rest.logic.CustomerLogicRequestMode
-import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.Json
 import io.vertx.ext.auth.properties.PropertyFileAuthentication
-import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.AuthenticationHandler
 import io.vertx.ext.web.handler.BasicAuthHandler
-import kotlin.reflect.KClass
+import io.vertx.kotlin.coroutines.CoroutineVerticle
 import org.apache.logging.log4j.kotlin.Logging
+import kotlin.reflect.KClass
 
-abstract class AbstractCustomerRestVerticle(private val logic: CustomerLogic) : AbstractVerticle(), Logging {
+abstract class AbstractCustomerRestVerticle(private val logic: CustomerLogic) : CoroutineVerticle(), Logging {
 
     companion object {
 
@@ -29,9 +28,6 @@ abstract class AbstractCustomerRestVerticle(private val logic: CustomerLogic) : 
             return mapper.readValue(json, type.java)
         }
     }
-
-    // Visible router so we can manage routing from outside
-    abstract val router: Router
 
     internal fun loadCustomer(routingContext: RoutingContext) {
         val requestCustomerId: String = routingContext.request().getParam("customerId")
@@ -138,8 +134,10 @@ abstract class AbstractCustomerRestVerticle(private val logic: CustomerLogic) : 
         return BasicAuthHandler.create(authProvider)
     }
 
-    private fun buildInvalidCustomerIdResponse(customerId: String,
-        routingContext: RoutingContext): HttpServerResponse {
+    private fun buildInvalidCustomerIdResponse(
+        customerId: String,
+        routingContext: RoutingContext
+    ): HttpServerResponse {
         return routingContext
             .response()
             .setStatusCode(400)

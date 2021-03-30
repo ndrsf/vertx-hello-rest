@@ -149,7 +149,7 @@ internal class CustomerRestVerticlesIntegrationTest {
 
     private fun configureWebClient(httpMethod: HttpMethod, url: String) {
         webRequest = WebClient.create(vertx)
-            .request(httpMethod, 8085, "localhost", url)
+            .request(httpMethod, MainVerticle.PORT, "localhost", url)
             .authentication(UsernamePasswordCredentials("writer", "writerpw"))
             .expect(ResponsePredicate.SC_SUCCESS)
     }

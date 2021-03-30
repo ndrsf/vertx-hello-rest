@@ -5,21 +5,22 @@ import de.apwolf.vertx_rest.persistence.CustomerPersistence
 import de.apwolf.vertx_rest.restadapter.CustomerOpenApiRestVerticle
 import de.apwolf.vertx_rest.restadapter.CustomerRestVerticle
 import de.apwolf.vertx_rest.restadapter.SwaggerUiVerticle
-import io.vertx.core.AbstractVerticle
-import io.vertx.core.CompositeFuture
-import io.vertx.core.Future
-import io.vertx.core.Promise
 import io.vertx.ext.web.Router
+import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.await
 import org.apache.logging.log4j.kotlin.Logging
 
-class MainVerticle : AbstractVerticle(), Logging {
+class MainVerticle : CoroutineVerticle(), Logging {
 
-    private val customerLogic = CustomerLogic(CustomerPersistence())
+    companion object {
 
-    private lateinit var mainRouter: Router
+        const val PORT = 8085
 
-    override fun start(startPromise: Promise<Void>) {
-        mainRouter = Router.router(vertx)
+    }
+
+    override suspend fun start() {
+        val mainRouter = Router.router(vertx)
+        val customerLogic = CustomerLogic(CustomerPersistence())
 
         // We log error 500 because it gets returned when an exception got thrown somewhere in our code
         mainRouter.errorHandler(500) { handler -> logger.error("Error 500", handler.failure()) }
@@ -28,78 +29,37 @@ class MainVerticle : AbstractVerticle(), Logging {
             .createHttpServer()
             .requestHandler(mainRouter)
             .exceptionHandler { e -> logger.error("Exception in main Vertx", e) }
-            .listen(8085)
-            .onSuccess {
-                CompositeFuture.all(
-                    deploySwaggerUiVerticle(mainRouter),
-                    deployCustomerRestVerticle(mainRouter, customerLogic),
-                    deployCustomerOpenApiRestVerticle(mainRouter, customerLogic))
-                    .onSuccess {
-                        startPromise.complete()
-                    }
-                    .onFailure {
-                        startPromise.fail(it)
+            .listen(PORT)
+            .await() // Doesn't seem like we get race conditions if we don't wait, but who knows...
 
-                    }
-            }
-            .onFailure {
-                logger.error("Exception in main Vertx", it)
-                startPromise.fail(it)
-            }
+        // We don't wait for successful deployments here, exceptions bubble up and end the application
+        deploySwaggerUiVerticle(mainRouter)
+        deployCustomerRestVerticle(mainRouter, customerLogic)
+        deployCustomerOpenApiRestVerticle(mainRouter, customerLogic)
+        logger.info("Deployed MainVerticle")
     }
 
     /**
-     * Swagger API is available under http://localhost:8085/swagger/swagger-ui
+     * Swagger API is available under http://localhost:$port/swagger/swagger-ui
      */
-    private fun deploySwaggerUiVerticle(mainRouter: Router): Future<Void> {
-        val swaggerUiVerticle = SwaggerUiVerticle()
-        return Future.future { promise ->
-            vertx.deployVerticle(swaggerUiVerticle)
-                .onSuccess {
-                    mainRouter.mountSubRouter("/swagger", swaggerUiVerticle.router)
-                    logger.info("Deployed SwaggerUiVerticle")
-                    promise.complete()
-                }
-                .onFailure {
-                    logger.error("Failure when deploying SwaggerUiVerticle", it)
-                    promise.fail(it)
-                }
-        }
+    private fun deploySwaggerUiVerticle(mainRouter: Router) {
+        val swaggerUiVerticle = SwaggerUiVerticle(mainRouter)
+        vertx.deployVerticle(swaggerUiVerticle)
+        logger.info("Deployed SwaggerUiVerticle")
     }
 
-    private fun deployCustomerRestVerticle(mainRouter: Router, customerLogic: CustomerLogic): Future<Void> {
-        val customerRestVerticle = CustomerRestVerticle(customerLogic)
-        return Future.future { promise ->
-            vertx.deployVerticle(customerRestVerticle)
-                .onSuccess {
-                    mainRouter.mountSubRouter("/customer", customerRestVerticle.router)
-                    logger.info("Deployed CustomerRestVerticle")
-                    promise.complete()
-                }
-                .onFailure {
-                    logger.error("Failure when deploying CustomerRestVerticle", it)
-                    promise.fail(it)
-                }
-        }
+    private fun deployCustomerRestVerticle(mainRouter: Router, customerLogic: CustomerLogic) {
+        val customerRestVerticle = CustomerRestVerticle(customerLogic, mainRouter)
+        vertx.deployVerticle(customerRestVerticle)
+        logger.info("Deployed CustomerRestVerticle")
     }
 
     /**
      * Available at /customer2/customer
      */
-    private fun deployCustomerOpenApiRestVerticle(mainRouter: Router, customerLogic: CustomerLogic): Future<Void> {
+    private fun deployCustomerOpenApiRestVerticle(mainRouter: Router, customerLogic: CustomerLogic) {
         val customerRestOpenApiVerticle = CustomerOpenApiRestVerticle(customerLogic, mainRouter)
-        return Future.future { promise ->
-            vertx.deployVerticle(customerRestOpenApiVerticle)
-                .onSuccess {
-                    // Remember to change the path in the openapi.yaml as well if you change the path
-                    mainRouter.mountSubRouter("/customer2", customerRestOpenApiVerticle.router)
-                    logger.info("Deployed CustomerOpenApiRestVerticle")
-                    promise.complete()
-                }
-                .onFailure {
-                    logger.error("Failure when deploying CustomerOpenApiRestVerticle", it)
-                    promise.fail(it)
-                }
-        }
+        vertx.deployVerticle(customerRestOpenApiVerticle)
+        logger.info("Deployed CustomerOpenApiRestVerticle")
     }
 }

@@ -1,17 +1,15 @@
 package de.apwolf.vertx_rest.restadapter
 
 import de.apwolf.vertx_rest.logic.CustomerLogic
-import io.vertx.core.Promise
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import org.apache.logging.log4j.kotlin.Logging
 
-class CustomerRestVerticle(logic: CustomerLogic) : Logging, AbstractCustomerRestVerticle(logic) {
+class CustomerRestVerticle(logic: CustomerLogic, private val mainRouter: Router) : Logging,
+    AbstractCustomerRestVerticle(logic) {
 
-    override lateinit var router: Router
-
-    override fun start(startPromise: Promise<Void>) {
-        router = Router.router(vertx)
+    override suspend fun start() {
+        val router = Router.router(vertx)
         router.route("/*")
             .handler(BodyHandler.create()) // allow bodies for everything because why not :o)
             .handler(buildAuthenticationHandler()) // secure all routes with basic auth
@@ -30,7 +28,7 @@ class CustomerRestVerticle(logic: CustomerLogic) : Logging, AbstractCustomerRest
             .delete("/:customerId")
             .handler(this::deleteCustomer)
 
-        super.start(startPromise)
+        mainRouter.mountSubRouter("/customer", router)
     }
 
 }

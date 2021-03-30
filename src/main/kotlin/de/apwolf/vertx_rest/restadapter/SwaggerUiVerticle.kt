@@ -1,9 +1,8 @@
 package de.apwolf.vertx_rest.restadapter
 
-import io.vertx.core.AbstractVerticle
-import io.vertx.core.Promise
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.StaticHandler
+import io.vertx.kotlin.coroutines.CoroutineVerticle
 import org.apache.logging.log4j.kotlin.Logging
 
 /**
@@ -11,21 +10,16 @@ import org.apache.logging.log4j.kotlin.Logging
  *
  * I would really like to make the path to the UI easier (just /swagger) but I can't seem to get it working.
  */
-class SwaggerUiVerticle : AbstractVerticle(), Logging {
+class SwaggerUiVerticle(private val mainRouter: Router) : CoroutineVerticle(), Logging {
 
     // Visible to access it from main to configure routing, lateinit because has to be init in start()
-    lateinit var router: Router
-
-    override fun start(startPromise: Promise<Void>) {
-        router = Router.router(vertx)
+    override suspend fun start() {
+        val router = Router.router(vertx)
         router
             .route("/*")
-            .handler(
-                StaticHandler
-                    .create()
-                    .setCachingEnabled(false)
-            )
-        super.start(startPromise)
+            // Disable caching to avoid annoying behaviour when testing
+            .handler(StaticHandler.create().setCachingEnabled(false))
+        mainRouter.mountSubRouter("/swagger", router)
     }
 
 }

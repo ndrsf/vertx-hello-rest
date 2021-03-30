@@ -28,11 +28,13 @@ Features:
 
 ToDo:
 
+- Clean up what is a Verticle and what not...
 - Asynchronous request handling / use coroutines
 - Add an API versioning logic (MIME types and URL would be nice)
 - Maybe add a third way where OpenAPI documentation is created on the fly by annotations in the code
 - And maybe a fourth way with Jax RS :)
 - Dependency Injection (maybe, quite a hassle)
+- in memory DB with nice persistence - this should be a different project
 
 Remarks:
 
@@ -42,4 +44,4 @@ Remarks:
     - Schema validation of body parameters, query and path params
     - Validation of MIME types (however implementation does not return error code 415 if no handler accepts the request mime type but rather returns
       400 - did not bother creating a bug for that yet)
-- Swagger UI is available on localhost:8085/swagger/swagger-ui
+- Swagger UI is available on localhost:$MainVerticle.PORT/swagger/swagger-ui
