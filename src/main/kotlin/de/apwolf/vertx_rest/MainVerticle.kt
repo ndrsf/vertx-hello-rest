@@ -32,7 +32,7 @@ class MainVerticle : CoroutineVerticle(), Logging {
             .listen(PORT)
             .await() // Doesn't seem like we get race conditions if we don't wait, but who knows...
 
-        // We don't wait for successful deployments here, exceptions bubble up and end the application
+        // We don't wait for successful deployments here, exception handling is in the methods themselves
         deploySwaggerUiVerticle(mainRouter)
         deployCustomerRestVerticle(mainRouter, customerLogic)
         deployCustomerOpenApiRestVerticle(mainRouter, customerLogic)
@@ -44,13 +44,13 @@ class MainVerticle : CoroutineVerticle(), Logging {
      */
     private fun deploySwaggerUiVerticle(mainRouter: Router) {
         val swaggerUiVerticle = SwaggerUiVerticle(mainRouter)
-        vertx.deployVerticle(swaggerUiVerticle)
+        vertx.deployVerticle(swaggerUiVerticle).onFailure { throw it }
         logger.info("Deployed SwaggerUiVerticle")
     }
 
     private fun deployCustomerRestVerticle(mainRouter: Router, customerLogic: CustomerLogic) {
         val customerRestVerticle = CustomerRestVerticle(customerLogic, mainRouter)
-        vertx.deployVerticle(customerRestVerticle)
+        vertx.deployVerticle(customerRestVerticle).onFailure { throw it }
         logger.info("Deployed CustomerRestVerticle")
     }
 
@@ -59,7 +59,7 @@ class MainVerticle : CoroutineVerticle(), Logging {
      */
     private fun deployCustomerOpenApiRestVerticle(mainRouter: Router, customerLogic: CustomerLogic) {
         val customerRestOpenApiVerticle = CustomerOpenApiRestVerticle(customerLogic, mainRouter)
-        vertx.deployVerticle(customerRestOpenApiVerticle)
+        vertx.deployVerticle(customerRestOpenApiVerticle).onFailure { throw it }
         logger.info("Deployed CustomerOpenApiRestVerticle")
     }
 }

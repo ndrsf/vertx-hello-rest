@@ -11,12 +11,16 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.predicate.ResponsePredicate
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
-import java.time.LocalDate
+import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.time.LocalDate
 
 /**
  * One test to rule them all - this test deploys our main verticle and calls the rest APIs of CustomerRestVerticle
@@ -35,6 +39,9 @@ internal class CustomerRestVerticlesIntegrationTest {
 
         lateinit var vertx: Vertx
 
+        /**
+         * TODO test runs into timeout when deployment fails (i.e. CustomerOpenApiRestVerticle.start() throws exception)
+         */
         @Suppress("unused") // IntelliJ cannot cope with beforeAll
         @BeforeAll
         @JvmStatic
@@ -42,13 +49,17 @@ internal class CustomerRestVerticlesIntegrationTest {
             configureVertxDefaultJacksonMapper()
 
             this.vertx = vertx
-            vertx.exceptionHandler { testContext.failNow(it) }
-            vertx.deployVerticle(MainVerticle()).onSuccess {
-                testContext.completeNow()
-            }.onFailure {
+            vertx.exceptionHandler {
                 testContext.failNow(it)
             }
-
+            GlobalScope.launch(vertx.dispatcher()) {
+                vertx.deployVerticle(MainVerticle()).await()
+                testContext.completeNow()
+            }.invokeOnCompletion {
+                if (it != null) {
+                    testContext.failNow(it)
+                }
+            }
         }
     }
 
@@ -81,9 +92,11 @@ internal class CustomerRestVerticlesIntegrationTest {
     private fun testInsertCustomer(): Future<Int> {
         return Future.future { promise ->
             configureWebClient(HttpMethod.POST, baseUrl)
-            val request = CustomerRequest(null,
+            val request = CustomerRequest(
+                null,
                 insertedCustomerName,
-                insertedCustomerBirthday)
+                insertedCustomerBirthday
+            )
             webRequest.sendJson(request)
                 .onSuccess {
                     val response =
@@ -118,9 +131,11 @@ internal class CustomerRestVerticlesIntegrationTest {
     private fun testUpdateCustomer(customerId: Int): Future<Int> {
         return Future.future { promise ->
             configureWebClient(HttpMethod.PUT, "$baseUrl/${customerId}")
-            val request = CustomerRequest(null,
+            val request = CustomerRequest(
+                null,
                 updatedCustomerName,
-                updatedCustomerBirthday)
+                updatedCustomerBirthday
+            )
             webRequest.sendJson(request)
                 .onSuccess {
                     val response =
