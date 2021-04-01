@@ -33,6 +33,7 @@ class MainVerticle : CoroutineVerticle(), Logging {
             .await() // Doesn't seem like we get race conditions if we don't wait, but who knows...
 
         // We don't wait for successful deployments here, exception handling is in the methods themselves
+        // TODO think of a nice way to fail deployment if a subdeployment fails - currently we use the exceptionHandler
         deploySwaggerUiVerticle(mainRouter)
         deployCustomerRestVerticle(mainRouter, customerLogic)
         deployCustomerOpenApiRestVerticle(mainRouter, customerLogic)

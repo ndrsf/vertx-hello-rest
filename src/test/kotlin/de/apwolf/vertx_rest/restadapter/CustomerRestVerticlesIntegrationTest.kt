@@ -11,7 +11,6 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.predicate.ResponsePredicate
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
-import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -50,15 +49,20 @@ internal class CustomerRestVerticlesIntegrationTest {
 
             this.vertx = vertx
             vertx.exceptionHandler {
+                println("aha!")
                 testContext.failNow(it)
             }
             GlobalScope.launch(vertx.dispatcher()) {
-                vertx.deployVerticle(MainVerticle()).await()
-                testContext.completeNow()
-            }.invokeOnCompletion {
-                if (it != null) {
-                    testContext.failNow(it)
-                }
+                vertx.deployVerticle(MainVerticle())
+                    .onSuccess {
+                        // Horrible hack, onsuccess is faster than the exception handler, so if a verticle deployment
+                        // fails the test is still green, so we add a delay
+                        vertx.setTimer(100) { testContext.completeNow() }
+                    }
+                    .onFailure {
+                        testContext.failNow(it)
+                    }
+
             }
         }
     }
