@@ -40,7 +40,7 @@ internal class CustomerRestVerticlesIntegrationTest {
         lateinit var vertx: Vertx
 
         /**
-         * TODO test runs into timeout when deployment fails (i.e. CustomerOpenApiRestVerticle.start() throws exception)
+         * TODO test test runs into timeout when deployment fails (i.e. CustomerOpenApiRestVerticle.start() throws exception)
          */
         @Suppress("unused") // IntelliJ cannot cope with beforeAll
         @BeforeAll
@@ -65,28 +65,29 @@ internal class CustomerRestVerticlesIntegrationTest {
 
     private lateinit var webRequest: HttpRequest<Buffer>
 
-    private var baseUrl = "/customer2/customer"
+    private var baseUrl = ""
 
     @Test
-    internal fun testCustomerRestService(vertx: Vertx, testContext: VertxTestContext) {
+    internal fun testCustomerOpenApiRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
+        baseUrl = "/customer2/customer"
+        testInsertCustomer()
+            .compose { customerId -> testGetCustomer(customerId) }
+            .compose { customerId -> testUpdateCustomer(customerId) }
+            .compose { customerId -> testDeleteCustomer(customerId) }
+            .onFailure { testContext.failNow(it) } // will be called if any of the methods fail
+            .onSuccess { testContext.completeNow() } // will be called if all of the methods succeed
+
+    }
+
+    @Test
+    internal fun testCustomerRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
         baseUrl = "/customer"
         testInsertCustomer()
-            .onSuccess { customerId -> testGetCustomer(customerId) }
-            .onSuccess { customerId -> testUpdateCustomer(customerId) }
-            .onSuccess { customerId -> testDeleteCustomer(customerId) }
-            .onSuccess {
-                baseUrl = "/customer2/customer"
-                // Vertx closes http connections if we don't add a delay - not a big problem but prints errors
-                // if we don't wait for a second
-                vertx.setTimer(1000) {
-                    testInsertCustomer()
-                        .onSuccess { customerId -> testGetCustomer(customerId) }
-                        .onSuccess { customerId -> testUpdateCustomer(customerId) }
-                        .onSuccess { customerId -> testDeleteCustomer(customerId) }
-                        .onSuccess { vertx.setTimer(1000) { testContext.completeNow() } }
-                }
-            }
-
+            .compose { customerId -> testGetCustomer(customerId) }
+            .compose { customerId -> testUpdateCustomer(customerId) }
+            .compose { customerId -> testDeleteCustomer(customerId) }
+            .onFailure { testContext.failNow(it) } // will be called if any of the methods fail
+            .onSuccess { testContext.completeNow() } // will be called if all of the methods succeed
     }
 
     private fun testInsertCustomer(): Future<Int> {
@@ -143,7 +144,7 @@ internal class CustomerRestVerticlesIntegrationTest {
                     assertEquals(updatedCustomerName, response.name)
                     assertEquals(updatedCustomerBirthday, response.birthday)
                     assertEquals(customerId, response.id)
-                    promise.complete()
+                    promise.complete(customerId)
                 }
                 .onFailure {
                     promise.fail(it)

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import de.apwolf.vertx_rest.logic.CustomerId
 import de.apwolf.vertx_rest.logic.CustomerLogic
 import de.apwolf.vertx_rest.logic.CustomerLogicRequestMode
+import io.vertx.core.Handler
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.Json
 import io.vertx.ext.auth.properties.PropertyFileAuthentication
@@ -12,6 +13,8 @@ import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.AuthenticationHandler
 import io.vertx.ext.web.handler.BasicAuthHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.launch
 import org.apache.logging.log4j.kotlin.Logging
 import kotlin.reflect.KClass
 
@@ -132,6 +135,23 @@ abstract class AbstractCustomerRestVerticle(private val logic: CustomerLogic) : 
     internal fun buildAuthenticationHandler(): AuthenticationHandler {
         val authProvider = PropertyFileAuthentication.create(vertx, "basic-auth.properties")
         return BasicAuthHandler.create(authProvider)
+    }
+
+
+    /**
+     * Shamelessly stolen from https://medium.com/hackernoon/asynchronous-temporal-rest-with-vert-x-keycloak-and-kotlin-coroutines-217b25756314
+     * TODO use executeBlockingAwait?
+     */
+    internal fun coroutineHandler(fn: suspend (RoutingContext) -> Unit): Handler<RoutingContext> {
+        return Handler<RoutingContext> { ctx ->
+            launch(ctx.vertx().dispatcher()) {
+                try {
+                    fn(ctx)
+                } catch (e: Exception) {
+                    ctx.fail(e)
+                }
+            }
+        }
     }
 
     private fun buildInvalidCustomerIdResponse(

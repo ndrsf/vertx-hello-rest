@@ -13,10 +13,10 @@ class CustomerOpenApiRestVerticle(logic: CustomerLogic, private val mainRouter: 
         val builder = RouterBuilder.create(vertx, "webroot/openapi.yaml").await()
 
         builder.securityHandler("customer_auth", buildAuthenticationHandler())
-        builder.operation("getCustomer").handler(this::loadCustomer) // GET
-        builder.operation("insertCustomer").handler(this::insertCustomer) // POST
-        builder.operation("deleteCustomer").handler(this::deleteCustomer) // DEL
-        builder.operation("updateCustomer").handler(this::updateCustomer) // PUT
+        builder.operation("getCustomer").handler(coroutineHandler { loadCustomer(it) }) // GET
+        builder.operation("insertCustomer").handler(coroutineHandler { insertCustomer(it) })// POST
+        builder.operation("deleteCustomer").handler(coroutineHandler { deleteCustomer(it) }) // DEL
+        builder.operation("updateCustomer").handler(coroutineHandler { updateCustomer(it) }) // PUT
 
         // Remember to change the path in the openapi.yaml as well if you change the path
         mainRouter.mountSubRouter("/customer2", builder.createRouter())

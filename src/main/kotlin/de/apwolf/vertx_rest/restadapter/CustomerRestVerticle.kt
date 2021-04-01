@@ -14,19 +14,18 @@ class CustomerRestVerticle(logic: CustomerLogic, private val mainRouter: Router)
             .handler(BodyHandler.create()) // allow bodies for everything because why not :o)
             .handler(buildAuthenticationHandler()) // secure all routes with basic auth
         router
-            .get("/:customerId")
-            .handler(this::loadCustomer)
+            .get("/:customerId").handler(coroutineHandler { loadCustomer(it) })
         router
             .put("/:customerId")
             .consumes("application/json") // sadly there doesn't seem to be a way to define accepted mime types per route
-            .handler { routingContext -> updateCustomer(routingContext) }
+            .handler(coroutineHandler { updateCustomer(it) })
         router
             .post("/")
             .consumes("application/json")
-            .handler { routingContext -> insertCustomer(routingContext) }
+            .handler(coroutineHandler { insertCustomer(it) })
         router
             .delete("/:customerId")
-            .handler(this::deleteCustomer)
+            .handler(coroutineHandler { deleteCustomer(it) })
 
         mainRouter.mountSubRouter("/customer", router)
     }
