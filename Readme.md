@@ -21,7 +21,7 @@ Features:
 - Example operations for common HTTP operations in plain Vertx
 - Example operations for common HTTP operations with OpenAPI
     - Also includes Swagger UI ready to try out the operations    
-- Example file-based Basic Auth implementation
+- Example file-based Basic Auth implementation with role validation
 - Nice Kotlin data class handling
 - Nice encapsulation of REST functionality and business logic
 - Unit tests to test the exposed REST APIs
@@ -40,8 +40,9 @@ Remarks:
 
 - OpenAPI provides these features:
     - Routes and operations are defined and validated
-    - Defining security (sadly roles are not supported by OpenAPI 3.0 and Basic Auth)
+    - Defining security (sadly roles are not supported by OpenAPI 3.0 for Basic Auth)
     - Schema validation of body parameters, query and path params
     - Validation of MIME types (however implementation does not return error code 415 if no handler accepts the request mime type but rather returns
       400 - did not bother creating a bug for that yet)
 - Swagger UI is available on localhost:$MainVerticle.PORT/swagger/swagger-ui
+- Role validation for basic auth is done horribly manually, I wonder if there is a nicer way

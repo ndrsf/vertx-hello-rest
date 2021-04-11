@@ -38,9 +38,6 @@ internal class CustomerRestVerticlesIntegrationTest {
 
         lateinit var vertx: Vertx
 
-        /**
-         * TODO test test runs into timeout when deployment fails (i.e. CustomerOpenApiRestVerticle.start() throws exception)
-         */
         @Suppress("unused") // IntelliJ cannot cope with beforeAll
         @BeforeAll
         @JvmStatic
@@ -92,6 +89,54 @@ internal class CustomerRestVerticlesIntegrationTest {
             .compose { customerId -> testDeleteCustomer(customerId) }
             .onFailure { testContext.failNow(it) } // will be called if any of the methods fail
             .onSuccess { testContext.completeNow() } // will be called if all of the methods succeed
+    }
+
+    @Test
+    internal fun testInvalidUserForCustomerRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
+        configureWebClient(
+            HttpMethod.GET, "/customer/1",
+            UsernamePasswordCredentials("retirw", "writerpw"),
+            ResponsePredicate.status(401)
+        )
+        webRequest.send()
+            .onSuccess { testContext.completeNow() }
+            .onFailure { testContext.failNow(it) }
+    }
+
+    @Test
+    internal fun testInvalidUserForCustomerOpenApiRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
+        configureWebClient(
+            HttpMethod.GET, "/customer2/customer/1",
+            UsernamePasswordCredentials("retirw", "writerpw"),
+            ResponsePredicate.status(401)
+        )
+        webRequest.send()
+            .onSuccess { testContext.completeNow() }
+            .onFailure { testContext.failNow(it) }
+    }
+
+    @Test
+    internal fun testWrongUserForCustomerRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
+        configureWebClient(
+            HttpMethod.GET, "/customer/1",
+            UsernamePasswordCredentials("writer", "writerpw"),
+            ResponsePredicate.status(403)
+        )
+        webRequest.send()
+            .onSuccess { testContext.completeNow() }
+            .onFailure { testContext.failNow(it) }
+    }
+
+    @Test
+    internal fun testWrongUserForCustomerOpenApiRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
+        configureWebClient(
+            HttpMethod.GET, "/customer2/customer/1",
+            UsernamePasswordCredentials("writer", "writerpw"),
+            ResponsePredicate.status(403)
+        )
+        webRequest.send()
+            .onSuccess { testContext.completeNow() }
+            .onFailure { testContext.failNow(it) }
     }
 
     private fun testInsertCustomer(): Future<Int> {
@@ -167,10 +212,14 @@ internal class CustomerRestVerticlesIntegrationTest {
         }
     }
 
-    private fun configureWebClient(httpMethod: HttpMethod, url: String) {
+    private fun configureWebClient(
+        httpMethod: HttpMethod, url: String,
+        credentials: UsernamePasswordCredentials = UsernamePasswordCredentials("both", "bothpw"),
+        expectedStatus: ResponsePredicate = ResponsePredicate.SC_SUCCESS
+    ) {
         webRequest = WebClient.create(vertx)
             .request(httpMethod, MainVerticle.PORT, "localhost", url)
-            .authentication(UsernamePasswordCredentials("writer", "writerpw"))
-            .expect(ResponsePredicate.SC_SUCCESS)
+            .authentication(credentials)
+            .expect(expectedStatus)
     }
 }

@@ -12,7 +12,6 @@ import org.apache.logging.log4j.kotlin.Logging
  */
 class SwaggerUiVerticle(private val mainRouter: Router) : CoroutineVerticle(), Logging {
 
-    // Visible to access it from main to configure routing, lateinit because has to be init in start()
     override suspend fun start() {
         val router = Router.router(vertx)
         router
