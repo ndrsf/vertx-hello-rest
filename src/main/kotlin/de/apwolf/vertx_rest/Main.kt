@@ -2,19 +2,13 @@ package de.apwolf.vertx_rest
 
 import de.apwolf.vertx_rest.restadapter.configureVertxDefaultJacksonMapper
 import de.apwolf.vertx_rest.util.buildInitialConfig
-import io.vertx.config.ConfigRetriever
-import io.vertx.config.ConfigRetrieverOptions
-import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
-import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.logging.log4j.kotlin.logger
 import kotlin.system.exitProcess
-
 
 suspend fun main(args: Array<String>) {
     val logger = logger("de.apwolf.vertx_rest.main()")

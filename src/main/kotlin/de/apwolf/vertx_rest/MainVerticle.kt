@@ -6,13 +6,9 @@ import de.apwolf.vertx_rest.restadapter.CustomerOpenApiRestVerticle
 import de.apwolf.vertx_rest.restadapter.CustomerRestVerticle
 import de.apwolf.vertx_rest.restadapter.SwaggerUiVerticle
 import de.apwolf.vertx_rest.util.ConfigHandler
-import de.apwolf.vertx_rest.util.GET_CURRENT_CONFIG
-import io.vertx.core.eventbus.Message
-import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import io.vertx.kotlin.coroutines.awaitResult
 import org.apache.logging.log4j.kotlin.Logging
 
 class MainVerticle : CoroutineVerticle(), Logging {
