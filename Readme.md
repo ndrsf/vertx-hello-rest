@@ -25,16 +25,15 @@ Features:
 - Nice Kotlin data class handling
 - Nice encapsulation of REST functionality and business logic
 - Unit tests to test the exposed REST APIs
+- Config handling for bootstrapping and during execution
 
 ToDo:
 
-- Clean up what is a Verticle and what not...
-- Asynchronous request handling / use coroutines
+- Proper asynchronous request handling / use coroutines
 - Add an API versioning logic (MIME types and URL would be nice)
 - Maybe add a third way where OpenAPI documentation is created on the fly by annotations in the code
-- And maybe a fourth way with Jax RS :)
 - Dependency Injection (maybe, quite a hassle)
-- in memory DB with nice persistence - this should be a different project
+- in-memory DB with nice persistence
 
 Remarks:
 
@@ -46,3 +45,4 @@ Remarks:
       400 - did not bother creating a bug for that yet)
 - Swagger UI is available on localhost:$MainVerticle.PORT/swagger/swagger-ui
 - Role validation for basic auth is done horribly manually, I wonder if there is a nicer way
+- To get the current config, see ConfigHandler.kt

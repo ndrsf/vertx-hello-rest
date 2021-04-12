@@ -198,7 +198,7 @@ abstract class AbstractCustomerRestVerticle(private val logic: CustomerLogic) : 
             val userRoles = routingContext.user().authorizations().get(BASIC_AUTH_FILE)
                 .stream()
                 .filter { it is RoleBasedAuthorization }
-                .map { a -> a as RoleBasedAuthorization }
+                .map { it as RoleBasedAuthorization }
                 .map { it.role }
                 .collect(Collectors.toList())
 
