@@ -248,6 +248,25 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>vertx-config.yaml</include>
+                    <include>webroot/openapi.yaml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- We include all other resources without filtering -->
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
     </build>
 
 

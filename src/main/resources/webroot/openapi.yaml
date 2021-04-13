@@ -11,7 +11,7 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-  - url: http://localhost:8085/customer2 # Remember to change this in the CustomerOpenApiRestAdapter as well if you change the path
+  - url: http://localhost:8085/v1/customer2 # Remember to change this in the CustomerOpenApiRestAdapter as well if you change the path
 tags:
   - name: customer
     description: Customer Service Operations

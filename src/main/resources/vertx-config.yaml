@@ -1,3 +1,4 @@
-test: test
+http.port: 8085
+rest.version: ${project.version} # used for REST path, this is the major version from the pom
 blockedThreadCheckInterval: 100
 blockedThreadCheckIntervalUnit: SECONDS

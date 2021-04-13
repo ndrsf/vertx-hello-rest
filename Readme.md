@@ -26,14 +26,15 @@ Features:
 - Nice encapsulation of REST functionality and business logic
 - Unit tests to test the exposed REST APIs
 - Config handling for bootstrapping and during execution
+- Major version of artifact is included in REST paths
 
 ToDo:
 
-- Proper asynchronous request handling / use coroutines
-- Add an API versioning logic (MIME types and URL would be nice)
+- Proper asynchronous request handling via coroutines
 - Maybe add a third way where OpenAPI documentation is created on the fly by annotations in the code
 - Dependency Injection (maybe, quite a hassle)
-- in-memory DB with nice persistence
+- in-memory DB with nice persistence - this is a whole project on itself though
+- Version setting does not work in the openapi.yaml file, maybe we should switch to https://www.mojohaus.org/build-helper-maven-plugin/parse-version-mojo.html 
 
 Remarks:
 
@@ -46,3 +47,4 @@ Remarks:
 - Swagger UI is available on localhost:$MainVerticle.PORT/swagger/swagger-ui
 - Role validation for basic auth is done horribly manually, I wonder if there is a nicer way
 - To get the current config, see ConfigHandler.kt
+- The major version in the REST path is set by the Maven Resources Plugin so check the pom.xml `<resources>` tag for details

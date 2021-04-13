@@ -6,7 +6,7 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import org.apache.logging.log4j.kotlin.Logging
 
 /**
- * Swagger UI is available on localhost:8085/swagger/swagger-ui
+ * Swagger UI is available on localhost:8085/v1/swagger/swagger-ui
  *
  * I would really like to make the path to the UI easier (just /swagger) but I can't seem to get it working.
  */

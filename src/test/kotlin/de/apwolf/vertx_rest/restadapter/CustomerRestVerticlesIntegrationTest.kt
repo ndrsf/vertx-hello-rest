@@ -46,7 +46,6 @@ internal class CustomerRestVerticlesIntegrationTest {
 
             this.vertx = vertx
             vertx.exceptionHandler {
-                println("aha!")
                 testContext.failNow(it)
             }
             GlobalScope.launch(vertx.dispatcher()) {
@@ -70,7 +69,7 @@ internal class CustomerRestVerticlesIntegrationTest {
 
     @Test
     internal fun testCustomerOpenApiRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
-        baseUrl = "/customer2/customer"
+        baseUrl = "/${MainVerticle.REST_PATH_VERSION}/customer2/customer"
         testInsertCustomer()
             .compose { customerId -> testGetCustomer(customerId) }
             .compose { customerId -> testUpdateCustomer(customerId) }
@@ -82,7 +81,7 @@ internal class CustomerRestVerticlesIntegrationTest {
 
     @Test
     internal fun testCustomerRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
-        baseUrl = "/customer"
+        baseUrl = "/${MainVerticle.REST_PATH_VERSION}/customer"
         testInsertCustomer()
             .compose { customerId -> testGetCustomer(customerId) }
             .compose { customerId -> testUpdateCustomer(customerId) }
@@ -94,7 +93,7 @@ internal class CustomerRestVerticlesIntegrationTest {
     @Test
     internal fun testInvalidUserForCustomerRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
         configureWebClient(
-            HttpMethod.GET, "/customer/1",
+            HttpMethod.GET, "/${MainVerticle.REST_PATH_VERSION}/customer/1",
             UsernamePasswordCredentials("retirw", "writerpw"),
             ResponsePredicate.status(401)
         )
@@ -106,7 +105,7 @@ internal class CustomerRestVerticlesIntegrationTest {
     @Test
     internal fun testInvalidUserForCustomerOpenApiRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
         configureWebClient(
-            HttpMethod.GET, "/customer2/customer/1",
+            HttpMethod.GET, "/${MainVerticle.REST_PATH_VERSION}/customer2/customer/1",
             UsernamePasswordCredentials("retirw", "writerpw"),
             ResponsePredicate.status(401)
         )
@@ -118,7 +117,7 @@ internal class CustomerRestVerticlesIntegrationTest {
     @Test
     internal fun testWrongUserForCustomerRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
         configureWebClient(
-            HttpMethod.GET, "/customer/1",
+            HttpMethod.GET, "/${MainVerticle.REST_PATH_VERSION}/customer/1",
             UsernamePasswordCredentials("writer", "writerpw"),
             ResponsePredicate.status(403)
         )
@@ -130,7 +129,7 @@ internal class CustomerRestVerticlesIntegrationTest {
     @Test
     internal fun testWrongUserForCustomerOpenApiRestVerticle(vertx: Vertx, testContext: VertxTestContext) {
         configureWebClient(
-            HttpMethod.GET, "/customer2/customer/1",
+            HttpMethod.GET, "/${MainVerticle.REST_PATH_VERSION}/customer2/customer/1",
             UsernamePasswordCredentials("writer", "writerpw"),
             ResponsePredicate.status(403)
         )

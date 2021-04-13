@@ -14,6 +14,11 @@ import org.apache.logging.log4j.kotlin.Logging
  *
  * val reply = awaitResult<Message<JsonObject>> { vertx.eventBus().request(GET_CURRENT_CONFIG, "", it) }
  */
+
+const val HTTP_PORT = "http.port"
+
+const val REST_VERSION = "rest.version"
+
 class ConfigHandler : Logging, CoroutineVerticle() {
 
     var currentConfig: JsonObject? = null
